@@ -1,0 +1,252 @@
+<style>
+body{
+    background: linear-gradient(135deg, #1a0033, #330066);
+    color: #fff;
+    font-family: 'Comic Sans MS', Arial;
+}
+
+h2{
+    text-align:center;
+    color:#ffd700;
+    text-shadow: 0 0 10px #ffea00;
+}
+
+#board div{
+    background: rgba(255,255,255,0.15);
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(255,215,0,0.6);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#board div:hover{
+    transform: scale(1.08);
+    box-shadow: 0 0 20px #ffd700;
+}
+
+#status{
+    text-align:center;
+    font-size:18px;
+    margin-top:10px;
+    color:#ffddff;
+}
+
+#chibipau{
+    width:160px;
+    height:auto;
+    display:block;
+    margin:15px auto;
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Animación flotante */
+@keyframes float{
+    0%{ transform: translateY(0px); }
+    50%{ transform: translateY(-8px); }
+    100%{ transform: translateY(0px); }
+}
+</style>
+
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Tres en raya inline</title>
+</head>
+<body style="margin:0; font-family:Arial; display:flex; justify-content:center; padding-top:20px;">
+<div>
+<h2>Tres en raya</h2>
+<div id="board" style="display:grid; grid-template-columns:repeat(3,80px); gap:5px;"></div>
+<p id="status"></p>
+<img id="chibipau" src="https://i.imgur.com/oeex6Q4.png" />
+</div>
+
+
+<script>
+let inicio = true;
+let board = Array(9).fill(null);
+const HUMAN = "X";
+const AI = "O";
+const HUMAN_IMG = "https://i.imgur.com/4AiXzf8.png"; // gorrito fiesta
+const AI_IMG = "https://i.imgur.com/OG1VZ3F.png";    // chibi con confeti
+let current = HUMAN;
+let over = false;
+
+const nivelDif = Math.floor(Math.random() * 3) + 1;
+const winLines = [ [0,1,2],[3,4,5],[6,7,8], [0,3,6],[1,4,7],[2,5,8], [0,4,8],[2,4,6] ];
+
+
+function render(){
+const boardEl = document.getElementById("board");
+boardEl.innerHTML = "";
+
+
+board.forEach((v,i)=>{
+const cell = document.createElement("div");
+cell.style.width = "80px";
+cell.style.height = "80px";
+cell.style.border = "2px solid #e5a3da";
+cell.style.display = "flex";
+cell.style.alignItems = "center";
+cell.style.justifyContent = "center";
+cell.style.fontSize = "40px";
+cell.style.cursor = "pointer";
+cell.textContent = v ? v : "";
+cell.onclick = () => clickCell(i);
+boardEl.appendChild(cell);
+});
+
+const st = document.getElementById("status");
+var imagen = document.getElementById("chibipau");
+const resultado = checkWinner(board);
+
+    if(resultado){
+	    if(resultado==="tie"){
+		  st.textContent = "Empate";
+		  imagen.src = "https://i.imgur.com/JAwmbqe.png";
+		}
+		else if(resultado === AI){
+		    st.textContent = "Chibi Pau Gana";
+            imagen.src = "https://i.imgur.com/JAwmbqe.png";
+        } else if(resultado === HUMAN){
+		    st.textContent = "Enhorabuena has ganado. Chibi Pau triste...";
+            imagen.src = "https://i.imgur.com/LHUpb7S.png";
+        }
+    } 
+    else 
+    {
+	    if(inicio && nivelDif==1)
+		{
+			st.textContent = "Vamos a jugar. Empieza tu cariño";
+			inicio=false;
+		}
+		else if(inicio && nivelDif==2){
+			st.textContent = "Vamos a jugar y no te lo pondré fácil, tu turno Amor";
+			inicio=false;
+		}
+		else if(inicio && nivelDif==3){
+			st.textContent = "Juguemos! Este chibi Pau va a por todas! Tu turno Amor";
+			inicio=false;
+		}	
+		else{
+			if(current === HUMAN){
+				st.textContent = "Tu turno Amor";
+				imagen.src = "https://i.imgur.com/oeex6Q4.png";
+			} 
+			else {
+				st.textContent = "Chibi Pau está pensando...";
+				imagen.src = "https://i.imgur.com/mZPYVlP.png";  
+			}
+		}
+    }
+}
+
+
+function clickCell(i){
+	if(over || board[i] || current !== HUMAN) return;
+	board[i] = HUMAN;
+	document.getElementById('board').children[i].style.background = '#ffd6f2'; // rosa claro
+	next();
+}
+
+
+function next(){
+	const w = checkWinner(board);
+	if(w){ over = true; render(); return; }
+	current = current === HUMAN ? AI : HUMAN;
+	render();
+	if(current === AI){ setTimeout(aiMove, 1300); }
+}
+
+function checkWinner(b){
+for(const l of winLines){
+const[a,b1,c] = l;
+if(b[a] && b[a]===b[b1] && b[a]===b[c]) return b[a];
+}
+if(b.every(x=>x)) return "tie";
+return null;
+}
+
+
+function aiMove(){
+let move = null;
+
+if(nivelDif === 1){
+move = randomMove();
+}
+else if(nivelDif === 2){
+move = tryWinOrBlock(AI) ?? tryWinOrBlock(HUMAN) ?? randomMove();
+}
+else if(nivelDif === 3){
+move = bestMove(board);
+}
+board[move] = AI;
+document.getElementById('board').children[move].style.background = '#c9ffd1'; // verde claro
+next();
+}
+
+function tryWinOrBlock(player){
+for(let i=0;i<9;i++){
+if(!board[i]){
+const copy = board.slice();
+copy[i] = player;
+if(checkWinner(copy) === player) return i;
+}
+}
+return null;
+}
+
+function randomMove(){
+const free = board.map((v,i)=>v?null:i).filter(v=>v!==null);
+return free[Math.floor(Math.random()*free.length)];
+}
+// Minimax completo para "Imposible"
+function bestMove(b){
+let best = -Infinity;
+let move = null;
+
+
+for(let i=0;i<9;i++){
+if(!b[i]){
+const copy = b.slice();
+copy[i] = AI;
+const score = minimax(copy, false);
+if(score > best){ best = score; move = i; }
+}
+}
+return move;
+}
+
+
+function minimax(b, isMax){
+const w = checkWinner(b);
+if(w === AI) return 1;
+if(w === HUMAN) return -1;
+if(w === "tie") return 0;
+
+
+if(isMax){
+let best = -Infinity;
+for(let i=0;i<9;i++){
+if(!b[i]){
+const copy = b.slice(); copy[i]=AI;
+best = Math.max(best, minimax(copy,false));
+}
+}
+return best;
+} else {
+let best = Infinity;
+for(let i=0;i<9;i++){
+if(!b[i]){
+const copy = b.slice(); copy[i]=HUMAN;
+best = Math.min(best, minimax(copy,true));
+}
+}
+return best;
+}
+}
+
+
+render();
+</script>
+</body>
+</html>
