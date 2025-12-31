@@ -57,7 +57,7 @@ h2{
 <h2>Tres en raya</h2>
 <div id="board" style="display:grid; grid-template-columns:repeat(3,80px); gap:5px;"></div>
 <p id="status"></p>
-<img id="chibipau" src="https://i.imgur.com/oeex6Q4.png" />
+<img id="chibipau" src="neutral.png" />
 </div>
 
 
@@ -102,14 +102,14 @@ const resultado = checkWinner(board);
     if(resultado){
 	    if(resultado==="tie"){
 		  st.textContent = "Empate";
-		  imagen.src = "https://i.imgur.com/JAwmbqe.png";
+		  imagen.src = "neutral.png";
 		}
 		else if(resultado === AI){
 		    st.textContent = "Chibi Pau Gana";
-            imagen.src = "https://i.imgur.com/JAwmbqe.png";
+            imagen.src = "victoria.png";
         } else if(resultado === HUMAN){
 		    st.textContent = "Enhorabuena has ganado. Chibi Pau triste...";
-            imagen.src = "https://i.imgur.com/LHUpb7S.png";
+            imagen.src = "ko.png";
         }
     } 
     else 
