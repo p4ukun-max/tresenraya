@@ -140,10 +140,16 @@ const resultado = checkWinner(board);
 
 
 function clickCell(i){
-	if(over || board[i] || current !== HUMAN) return;
-	board[i] = HUMAN;
-	document.getElementById('board').children[i].style.background = '#ffd6f2'; // rosa claro
-	next();
+    if(over || board[i] || current !== HUMAN) return;
+
+    board[i] = HUMAN;
+
+    // 🔔 sonido campanada
+    document.getElementById("soundHuman").currentTime = 0;
+    document.getElementById("soundHuman").play();
+
+    document.getElementById('board').children[i].style.background = '#ffd6f2';
+    next();
 }
 
 
@@ -164,22 +170,28 @@ if(b.every(x=>x)) return "tie";
 return null;
 }
 
-
 function aiMove(){
-let move = null;
+    let move = null;
 
-if(nivelDif === 1){
-move = randomMove();
-}
-else if(nivelDif === 2){
-move = tryWinOrBlock(AI) ?? tryWinOrBlock(HUMAN) ?? randomMove();
-}
-else if(nivelDif === 3){
-move = bestMove(board);
-}
-board[move] = AI;
-document.getElementById('board').children[move].style.background = '#c9ffd1'; // verde claro
-next();
+    if(nivelDif === 1){
+        move = randomMove();
+    }
+    else if(nivelDif === 2){
+        move = tryWinOrBlock(AI) ?? tryWinOrBlock(HUMAN) ?? randomMove();
+    }
+    else if(nivelDif === 3){
+        move = bestMove(board);
+    }
+
+    board[move] = AI;
+
+    // 🥂 sonido copa
+    const aiSound = document.getElementById("soundAI");
+    aiSound.currentTime = 0;
+    aiSound.play();
+
+    document.getElementById('board').children[move].style.background = '#c9ffd1';
+    next();
 }
 
 function tryWinOrBlock(player){
@@ -246,5 +258,7 @@ return best;
 
 render();
 </script>
+<audio id="soundHuman" src="campanada.mp3" preload="auto"></audio>
+<audio id="soundAI" src="copa.mp3" preload="auto"></audio>
 </body>
 </html>
