@@ -165,16 +165,13 @@ const resultado = checkWinner(board);
 	    if(resultado==="tie"){
 		  st.textContent = "Empate";
 		  imagen.src = "neutral.png";
-		  document.getElementById("fireworks").style.display = "none";
 		}
 		else if(resultado === AI){
 		    st.textContent = "Chibi Pau Gana";
             imagen.src = "victoria.png";
-		    document.getElementById("fireworks").style.display = "none";
         } else if(resultado === HUMAN){
 		    st.textContent = "Enhorabuena has ganado.\nChibi Pau triste...";
             imagen.src = "ko.png";
-			document.getElementById("fireworks").style.display = "block";
         }
     } 
     else 
