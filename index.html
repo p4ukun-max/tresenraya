@@ -108,7 +108,7 @@ const resultado = checkWinner(board);
 		    st.textContent = "Chibi Pau Gana";
             imagen.src = "victoria.png";
         } else if(resultado === HUMAN){
-		    st.textContent = "Enhorabuena has ganado. Chibi Pau triste...";
+		    st.textContent = "Enhorabuena has ganado.<br>Chibi Pau triste...";
             imagen.src = "ko.png";
         }
     } 
@@ -120,21 +120,21 @@ const resultado = checkWinner(board);
 			inicio=false;
 		}
 		else if(inicio && nivelDif==2){
-			st.textContent = "Vamos a jugar y no te lo pondré fácil, tu turno Amor";
+			st.textContent = "Vamos a jugar y no te lo pondré fácil,<br> tu turno Amor";
 			inicio=false;
 		}
 		else if(inicio && nivelDif==3){
-			st.textContent = "Juguemos! Este chibi Pau va a por todas! Tu turno Amor";
+			st.textContent = "Juguemos! Este chibi Pau <br> va a por todas! Tu turno Amor";
 			inicio=false;
 		}	
 		else{
 			if(current === HUMAN){
 				st.textContent = "Tu turno Amor";
-				imagen.src = "https://i.imgur.com/oeex6Q4.png";
+				imagen.src = "neutral.png";
 			} 
 			else {
 				st.textContent = "Chibi Pau está pensando...";
-				imagen.src = "https://i.imgur.com/mZPYVlP.png";  
+				imagen.src = "pensando.png";  
 			}
 		}
     }
