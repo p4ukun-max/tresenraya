@@ -19,6 +19,7 @@ body::before{
     content:"";
     position:fixed;
     inset:0;
+    z-index:1;              /* 👈 AL FONDO */
     background-image:
       radial-gradient(#ffd700 1px, transparent 1px),
       radial-gradient(#ff66cc 1px, transparent 1px),
@@ -91,6 +92,7 @@ h2{
 .fireworks{
     position:fixed;
     inset:0;
+    z-index:999;           /* 👈 MUY ARRIBA */
     pointer-events:none;
     background:
       radial-gradient(circle, #fff 2px, transparent 3px),
@@ -98,12 +100,14 @@ h2{
       radial-gradient(circle, #ff66cc 2px, transparent 3px);
     background-size: 10px 10px;
     animation: boom 0.8s infinite alternate;
-    z-index:10;
 }
-
 @keyframes boom{
     from{opacity:0.3; transform:scale(1);}
     to{opacity:1; transform:scale(1.4);}
+}
+#game{
+    position:relative;
+    z-index:5;
 }
 </style>
 
@@ -114,13 +118,12 @@ h2{
 <title>Tres en raya inline</title>
 </head>
 <body style="margin:0; font-family:Arial; display:flex; justify-content:center; padding-top:20px;">
-<div>
-<h2>Tres en raya</h2>
-<div id="board" style="display:grid; grid-template-columns:repeat(3,80px); gap:5px;"></div>
-<p id="status"></p>
-<img id="chibipau" src="neutral.png" />
+<div id="game">
+  <h2>Tres en raya</h2>
+  <div id="board"></div>
+  <p id="status"></p>
+  <img id="chibipau" src="neutral.png">
 </div>
-
 
 <script>
 let inicio = true;
