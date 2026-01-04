@@ -6,9 +6,7 @@
 <title>Tres en raya</title>
 
 <style>
-*{
-    box-sizing: border-box;
-}
+*{ box-sizing:border-box; }
 
 body{
     margin:0;
@@ -24,7 +22,7 @@ body{
     padding-top:20px;
 }
 
-/* ✨ Confeti suave de fondo */
+/* ✨ Confeti */
 body::before{
     content:"";
     position:fixed;
@@ -42,7 +40,7 @@ body::before{
 
 @keyframes sparkle{
     from{background-position:0 0,0 0,0 0;}
-    to{background-position:800px 1200px, -800px 800px, 600px -1000px;}
+    to{background-position:800px 1200px,-800px 800px,600px -1000px;}
 }
 
 #game{
@@ -56,13 +54,12 @@ h2{
     text-align:center;
     color:#ffd700;
     text-shadow:0 0 12px #ffea00;
-    font-size:clamp(22px, 6vw, 32px);
+    font-size:clamp(22px,6vw,32px);
 }
 
-/* 📱 Tablero responsive */
 #board{
     display:grid;
-    grid-template-columns:repeat(3, 1fr);
+    grid-template-columns:repeat(3,1fr);
     gap:3vw;
     max-width:300px;
     width:90vw;
@@ -71,15 +68,15 @@ h2{
 
 #board div{
     aspect-ratio:1/1;
-    background: rgba(255,255,255,0.15);
+    background:rgba(255,255,255,0.15);
     border-radius:15px;
     box-shadow:0 0 10px rgba(255,215,0,0.6);
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:clamp(32px, 10vw, 46px);
+    font-size:clamp(32px,10vw,46px);
     cursor:pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition:0.2s;
     border:2px solid #e5a3da;
 }
 
@@ -90,44 +87,53 @@ h2{
 
 #status{
     text-align:center;
-    font-size:clamp(14px, 4vw, 18px);
+    font-size:clamp(14px,4vw,18px);
     margin-top:10px;
     white-space:pre-line;
     color:#ffddff;
-    padding:0 10px;
 }
 
 #chibipau{
     width:min(40vw,120px);
-    height:auto;
     display:block;
     margin:8px auto 0;
 }
 
-/* 🎆 Fuegos artificiales */
+/* 🔁 Botón reintentar */
+#retry{
+    display:none;
+    margin:15px auto 0;
+    padding:10px 22px;
+    font-size:16px;
+    border:none;
+    border-radius:25px;
+    background:linear-gradient(135deg,#ffd700,#ff66cc);
+    color:#330033;
+    cursor:pointer;
+    box-shadow:0 0 12px rgba(255,215,0,0.8);
+}
+
+#retry:hover{
+    transform:scale(1.05);
+}
+
+/* 🎆 Fuegos */
 .fireworks{
     position:fixed;
     inset:0;
     z-index:999;
     pointer-events:none;
     background:
-      radial-gradient(circle, #fff 2px, transparent 3px),
-      radial-gradient(circle, #ffd700 2px, transparent 3px),
-      radial-gradient(circle, #ff66cc 2px, transparent 3px);
-    background-size: 10px 10px;
-    animation: boom 0.8s infinite alternate;
+      radial-gradient(circle,#fff 2px,transparent 3px),
+      radial-gradient(circle,#ffd700 2px,transparent 3px),
+      radial-gradient(circle,#ff66cc 2px,transparent 3px);
+    background-size:10px 10px;
+    animation:boom 0.8s infinite alternate;
 }
 
 @keyframes boom{
     from{opacity:0.3; transform:scale(1);}
     to{opacity:1; transform:scale(1.4);}
-}
-
-/* 📱 Ajustes extra móvil */
-@media (max-width:480px){
-    #board{
-        gap:4vw;
-    }
 }
 </style>
 </head>
@@ -139,157 +145,136 @@ h2{
   <div id="board"></div>
   <p id="status"></p>
   <img id="chibipau" src="neutral.png">
+  <button id="retry" onclick="restart()">🔁 Reintentar</button>
 </div>
 
-<audio id="soundHuman" src="campanada.mp3" preload="auto"></audio>
-<audio id="soundAI" src="copa.mp3" preload="auto"></audio>
-<div id="fireworks" style="display:none" class="fireworks"></div>
+<audio id="soundHuman" src="campanada.mp3"></audio>
+<audio id="soundAI" src="copa.mp3"></audio>
 
 <script>
-let inicio = true;
-let board = Array(9).fill(null);
-const HUMAN = "🔔";
-const AI = "🥂";
-let current = HUMAN;
-let over = false;
+let inicio, board, current, over, nivelDif;
+const HUMAN="🔔", AI="🥂";
+const winLines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 
-const nivelDif = Math.floor(Math.random() * 3) + 1;
-const winLines = [
-  [0,1,2],[3,4,5],[6,7,8],
-  [0,3,6],[1,4,7],[2,5,8],
-  [0,4,8],[2,4,6]
-];
+function restart(){
+    inicio=true;
+    board=Array(9).fill(null);
+    current=HUMAN;
+    over=false;
+    nivelDif=Math.floor(Math.random()*3)+1;
+    document.getElementById("retry").style.display="none";
+    render();
+}
 
 function render(){
-  const boardEl = document.getElementById("board");
-  boardEl.innerHTML = "";
+    const boardEl=document.getElementById("board");
+    boardEl.innerHTML="";
+    board.forEach((v,i)=>{
+        const cell=document.createElement("div");
+        cell.textContent=v||"";
+        cell.onclick=()=>clickCell(i);
+        boardEl.appendChild(cell);
+    });
 
-  board.forEach((v,i)=>{
-    const cell = document.createElement("div");
-    cell.textContent = v ? v : "";
-    cell.onclick = () => clickCell(i);
-    boardEl.appendChild(cell);
-  });
+    const st=document.getElementById("status");
+    const img=document.getElementById("chibipau");
+    const res=checkWinner(board);
 
-  const st = document.getElementById("status");
-  const imagen = document.getElementById("chibipau");
-  const resultado = checkWinner(board);
-
-  if(resultado){
-    if(resultado==="tie"){
-      st.textContent = "Empate";
-      imagen.src = "neutral.png";
-    } else if(resultado === AI){
-      st.textContent = "Chibi Pau Gana";
-      imagen.src = "victoria.png";
+    if(res){
+        over=true;
+        document.getElementById("retry").style.display="block";
+        if(res==="tie"){ st.textContent="Empate"; img.src="neutral.png"; }
+        else if(res===AI){ st.textContent="Chibi Pau gana"; img.src="victoria.png"; }
+        else{ st.textContent="¡Has ganado!\nChibi Pau triste..."; img.src="ko.png"; }
     } else {
-      st.textContent = "Enhorabuena has ganado.\nChibi Pau triste...";
-      imagen.src = "ko.png";
+        if(inicio){
+            st.textContent=[
+              "Vamos a jugar. Empieza tu cariño",
+              "No te lo pondré fácil.\nTu turno Amor",
+              "¡Este Chibi Pau va a por todas!\nTu turno Amor"
+            ][nivelDif-1];
+            inicio=false;
+        } else {
+            st.textContent=current===HUMAN?"Tu turno Amor":"Chibi Pau está pensando...";
+            img.src=current===HUMAN?"neutral.png":"pensando.png";
+        }
     }
-  } else {
-    if(inicio){
-      const textos = [
-        "Vamos a jugar. Empieza tu cariño",
-        "Vamos a jugar y no te lo pondré fácil,\ntu turno Amor",
-        "Juguemos! Este chibi Pau\nva a por todas! Tu turno Amor"
-      ];
-      st.textContent = textos[nivelDif-1];
-      inicio = false;
-    } else {
-      if(current === HUMAN){
-        st.textContent = "Tu turno Amor";
-        imagen.src = "neutral.png";
-      } else {
-        st.textContent = "Chibi Pau está pensando...";
-        imagen.src = "pensando.png";
-      }
-    }
-  }
 }
 
 function clickCell(i){
-  if(over || board[i] || current !== HUMAN) return;
-  board[i] = HUMAN;
-  document.getElementById("soundHuman").play();
-  next();
+    if(over||board[i]||current!==HUMAN) return;
+    board[i]=HUMAN;
+    document.getElementById("soundHuman").play();
+    next();
 }
 
 function next(){
-  const w = checkWinner(board);
-  if(w){ over = true; render(); return; }
-  current = current === HUMAN ? AI : HUMAN;
-  render();
-  if(current === AI) setTimeout(aiMove, 1200);
+    if(checkWinner(board)){ render(); return; }
+    current=current===HUMAN?AI:HUMAN;
+    render();
+    if(current===AI) setTimeout(aiMove,1000);
 }
 
 function checkWinner(b){
-  for(const l of winLines){
-    const[a,b1,c] = l;
-    if(b[a] && b[a]===b[b1] && b[a]===b[c]) return b[a];
-  }
-  if(b.every(x=>x)) return "tie";
-  return null;
+    for(const l of winLines){
+        const[a,c,d]=l;
+        if(b[a]&&b[a]===b[c]&&b[a]===b[d]) return b[a];
+    }
+    return b.every(x=>x)?"tie":null;
 }
 
 function aiMove(){
-  let move = nivelDif === 1 ? randomMove()
-           : nivelDif === 2 ? tryWinOrBlock(AI) ?? tryWinOrBlock(HUMAN) ?? randomMove()
-           : bestMove(board);
-
-  board[move] = AI;
-  document.getElementById("soundAI").play();
-  next();
+    let move=nivelDif===1?randomMove():
+             nivelDif===2?(tryWB(AI)??tryWB(HUMAN)??randomMove()):
+             bestMove(board);
+    board[move]=AI;
+    document.getElementById("soundAI").play();
+    next();
 }
 
-function tryWinOrBlock(player){
-  for(let i=0;i<9;i++){
-    if(!board[i]){
-      const copy = board.slice();
-      copy[i] = player;
-      if(checkWinner(copy) === player) return i;
+function tryWB(p){
+    for(let i=0;i<9;i++){
+        if(!board[i]){
+            const c=board.slice(); c[i]=p;
+            if(checkWinner(c)===p) return i;
+        }
     }
-  }
-  return null;
 }
 
 function randomMove(){
-  const free = board.map((v,i)=>v?null:i).filter(v=>v!==null);
-  return free[Math.floor(Math.random()*free.length)];
+    const f=board.map((v,i)=>v?null:i).filter(v=>v!==null);
+    return f[Math.floor(Math.random()*f.length)];
 }
 
 function bestMove(b){
-  let best = -Infinity, move = null;
-  for(let i=0;i<9;i++){
-    if(!b[i]){
-      const copy = b.slice();
-      copy[i] = AI;
-      const score = minimax(copy,false);
-      if(score > best){ best = score; move = i; }
+    let best=-Infinity,move;
+    for(let i=0;i<9;i++){
+        if(!b[i]){
+            const c=b.slice(); c[i]=AI;
+            const s=minimax(c,false);
+            if(s>best){best=s;move=i;}
+        }
     }
-  }
-  return move;
+    return move;
 }
 
-function minimax(b,isMax){
-  const w = checkWinner(b);
-  if(w===AI) return 1;
-  if(w===HUMAN) return -1;
-  if(w==="tie") return 0;
-
-  let best = isMax ? -Infinity : Infinity;
-  for(let i=0;i<9;i++){
-    if(!b[i]){
-      const copy = b.slice();
-      copy[i] = isMax ? AI : HUMAN;
-      best = isMax
-        ? Math.max(best, minimax(copy,false))
-        : Math.min(best, minimax(copy,true));
+function minimax(b,max){
+    const w=checkWinner(b);
+    if(w===AI) return 1;
+    if(w===HUMAN) return -1;
+    if(w==="tie") return 0;
+    let best=max?-Infinity:Infinity;
+    for(let i=0;i<9;i++){
+        if(!b[i]){
+            const c=b.slice(); c[i]=max?AI:HUMAN;
+            const s=minimax(c,!max);
+            best=max?Math.max(best,s):Math.min(best,s);
+        }
     }
-  }
-  return best;
+    return best;
 }
 
-render();
+restart();
 </script>
 
 </body>
